@@ -4,6 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+// 1. Import product router
+const productRouter = require('./app/product/router');
+
 var app = express();
 
 // view engine setup
@@ -16,8 +19,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// 1.2 Gunakan product router
+app.use('/api', productRouter);
+
+app.use('/', (req, res) => {
+  res.render('index');
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
