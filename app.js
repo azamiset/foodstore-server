@@ -4,8 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// 1. Import product router
+// (1) Import router
 const productRouter = require('./app/product/router');
+const categoryRouter = require('./app/category/router');
 
 var app = express();
 
@@ -19,8 +20,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 1.2 Gunakan product router
+// (2) Gunakan router
 app.use('/api', productRouter);
+app.use('/api', categoryRouter);
 
 app.use('/', (req, res) => {
   res.render('index');
