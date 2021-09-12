@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const Produk = require('./model');
+const Category = require('../category/model');
+const Tag = require('../tag/model');
 const config = require('../config');
 
 
@@ -10,6 +12,26 @@ async function store(req, res, next) {
   try {
     // Terima data dari request body atau form
     let payload = req.body;
+    // periksa apakah request memiliki data 'category'
+    if (payload.category) {
+      let category = await Category.findOne({ name: { $regex: payload.category, $options: 'i' } });
+      // jika category ditemukan, maka gabungkan ke payload
+      if (category) {
+        payload = { ...payload, category: category._id };
+      } else {
+        delete payload.category;
+      }
+    }
+
+    // periksa apakah request memiliki data 'tags'
+    if (payload.tags && payload.tags.length) {
+      let tags = await Tag.find({ name: { $in: payload.tags } });
+      // (1) cek apakah tags membuahkan hasil\
+      if (tags.length) {
+        // (2) jika ada, maka kita ambil '_id' untuk masing-masing 'Tag' dan gabungkan dengan payload
+        payload = { ...payload, tags: tags.map((tag) => tag.id) };
+      }
+    }
 
     // Periksa apakah ada file yang di upload?
     if (req.file) {
@@ -86,15 +108,37 @@ async function index(req, res, next) {
 
 async function index(req, res, next) {
   try {
-    let { limit = 10, skip = 0 } = req.query;
+    let { limit = 10, skip = 0, q = '', category = '', tags = [] } = req.query;
 
-    let product =
-      await Produk
-        .find()
-        .limit(parseInt(limit))
-        .skip(parseInt(skip));
+    let criteria = {};
+    if (q.length) {
+      // ----- gabungkan dengan criteria ------
+      criteria = {
+        ...criteria,
+        name: { $regex: `${q}`, $options: 'i' }
+      }
+    }
+
+    if (category.length) {
+      category = await Category.findOne({ name: { $regex: `${category}` }, $options: 'i' });
+      if (category) {
+        criteria = { ...criteria, category: category._id };
+      }
+    }
+
+    if (tags.length) {
+      tags = await Tag.find({ name: { $in: tags } });
+      criteria = { ...criteria, tags: { $in: tags.map((tag) => tag._id) } };
+    }
+
+    let product = await Produk.find(criteria)
+      .limit(parseInt(limit))
+      .skip(parseInt(skip))
+      .populate('category')
+      .populate('tags');
 
     return res.json(product);
+
   } catch (err) {
     next(err);
   }
@@ -104,6 +148,26 @@ async function index(req, res, next) {
 async function update(req, res, next) {
   try {
     let payload = req.body;
+    // periksa apakah request memiliki data category
+    if (payload.category) {
+      let category = await Category.findOne({ name: { $regex: payload.category, $options: 'i' } });
+      // jika category ditemukan, maka gabungkan ke payload
+      if (category) {
+        payload = { ...payload, category: category._id };
+      } else {
+        delete payload.category;
+      }
+    }
+
+    // periksa apakah request memiliki data 'tags'
+    if (payload.tags && payload.tags.length) {
+      let tags = await Tag.find({ name: { $in: payload.tags } });
+      // (1) cek apakah tags membuahkan hasil\
+      if (tags.length) {
+        // (2) jika ada, maka kita ambil '_id' untuk masing-masing 'Tag' dan gabungkan dengan payload
+        payload = { ...payload, tags: tags.map((tag) => tag.id) };
+      }
+    }
 
     if (req.file) {
       let tmp_path = req.file.path;
