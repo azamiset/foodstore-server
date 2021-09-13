@@ -8,6 +8,7 @@ var logger = require('morgan');
 const productRouter = require('./app/product/router');
 const categoryRouter = require('./app/category/router');
 const tagRouter = require('./app/tag/router');
+const authRouter = require('./app/auth/router');
 
 var app = express();
 
@@ -24,7 +25,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // (2) Gunakan router
 app.use('/api', productRouter);
 app.use('/api', categoryRouter);
-app.use('/tags', tagRouter);
+app.use('/api', tagRouter);
+app.use('/auth', authRouter);
 
 app.use('/', (req, res) => {
   res.render('index');
