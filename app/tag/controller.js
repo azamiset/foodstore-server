@@ -3,6 +3,15 @@ const Tag = require('./model');
 // Membuat endpoint store untuk Tag
 async function store(req, res, next) {
   try {
+    // cek policy - untuk melindungi API 'Tag'
+    let policy = policyFor(req.user);
+    if (!policy.can('create', 'Tag')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat Category',
+      });
+    }
+
     // (1) dapatkan data dari request yang dikirimkan  client
     let payload = req.body;
     // (2) buat object Tag baru berdasarkan payload
@@ -29,6 +38,15 @@ async function store(req, res, next) {
 // Membuat endpoint update untuk Tag
 async function update(req, res, next) {
   try {
+    // cek policy - untuk melindungi API 'Tag'
+    let policy = policyFor(req.user);
+    if (!policy.can('update', 'Tag')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat Category',
+      });
+    }
+
     // (1) dapatkan data dari request yang dikirimkan  client
     let payload = req.body;
     // (2) cari data object Tag berdasarkan id, lalu update.
@@ -53,6 +71,15 @@ async function update(req, res, next) {
 // Membuat endpoint delete untuk Tag
 async function destroy(req, res, next) {
   try {
+    // cek policy - untuk melindungi API 'Tag'
+    let policy = policyFor(req.user);
+    if (!policy.can('delete', 'Tag')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat Category',
+      });
+    }
+
     let tag = await Tag.findByIdAndDelete({ _id: req.params.id });
     return res.json(tag);
 

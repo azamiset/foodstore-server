@@ -3,7 +3,9 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
 const config = require('../config');
+const { getToken } = require('../utils/get-token');
 
+// Membuat endpoint register pada auth
 async function register(req, res, next) {
   try {
     // (1) tangkap payload dari request
@@ -50,6 +52,7 @@ async function localStrategy(email, password, done) {
   done();
 }
 
+// Membuat endpoint login pada auth
 async function login(req, res, next) {
   passport.authenticate('local', async function (err, user) {
     // Jika terjadi error dari hasil 'local strategy' serahkan ke express
@@ -71,4 +74,37 @@ async function login(req, res, next) {
   })(req, res, next);
 }
 
-module.exports = { register, localStrategy, login };
+// Membuat endpoint me pada auth
+function me(req, res, next) {
+  if (!req.user) {
+    return res.json({
+      error: 1,
+      message: 'Your are not login or toekn expired',
+    });
+  }
+
+  return res.json(req.user);
+}
+
+// Membuat endpoint logout pada auth
+function logout(req, res, next) {
+  // (1) Dapatkan token dari request
+  let token = getToken(req);
+  // (2) hapus token dari user
+  let user = await User.findOneAndUpdate({ toke: { $in: [token] } },
+    { $pull: { token } }, { useFindAndModify: false });
+  // cek user atau token
+  if (!user || !token) {
+    return res.json({
+      error: 1,
+      message: 'User tidak ditemukan',
+    });
+  }
+  // logout berhasil
+  return res.json({
+    error: 0,
+    message: 'Logout Berhasil',
+  });
+}
+
+module.exports = { register, localStrategy, login, me, logout };

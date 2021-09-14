@@ -15,5 +15,8 @@ router.post('/register', multer().none(), controller.register);
 // (3.2) router untuk endpoint login pada Auth
 router.post('/login', multer().none(), controller.login);
 
+// (3.3) router untuk endpoint logout pada Auth
+router.post('/logut', multer().none(), controller.logout);
+
 // (4) export router
 module.exports = router;

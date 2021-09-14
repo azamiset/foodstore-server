@@ -5,11 +5,21 @@ const Produk = require('./model');
 const Category = require('../category/model');
 const Tag = require('../tag/model');
 const config = require('../config');
+const { policyFor } = require('../policy');
 
 
 // controller untuk membuat / menambahkan daftar produk
 async function store(req, res, next) {
   try {
+    // cek policy - untuk melindungi API product
+    let policy = policyFor(req.user);
+    if (!policy.can('create', 'Product')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat produk',
+      });
+    }
+
     // Terima data dari request body atau form
     let payload = req.body;
     // periksa apakah request memiliki data 'category'
@@ -126,18 +136,21 @@ async function index(req, res, next) {
       }
     }
 
-    if (tags.length) {
+    if (tags && tags.length) {
       tags = await Tag.find({ name: { $in: tags } });
       criteria = { ...criteria, tags: { $in: tags.map((tag) => tag._id) } };
     }
 
-    let product = await Produk.find(criteria)
+    let count = await Produk.find(criteria).countDocuments(); // perubahan 1
+
+    let products = await Produk
+      .find(criteria)
       .limit(parseInt(limit))
       .skip(parseInt(skip))
       .populate('category')
       .populate('tags');
 
-    return res.json(product);
+    return res.json({ data: products, count }); // perubahan 2
 
   } catch (err) {
     next(err);
@@ -147,6 +160,15 @@ async function index(req, res, next) {
 // controller untuk update product
 async function update(req, res, next) {
   try {
+    // cek policy - untuk melindungi API product
+    let policy = policyFor(req.user);
+    if (!policy.can('update', 'Product')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat produk',
+      });
+    }
+
     let payload = req.body;
     // periksa apakah request memiliki data category
     if (payload.category) {
@@ -224,6 +246,15 @@ async function update(req, res, next) {
 // controller untuk menghapus data product
 async function destroy(req, res, next) {
   try {
+    // cek policy - untuk melindungi API product
+    let policy = policyFor(req.user);
+    if (!policy.can('delete', 'Product')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat produk',
+      });
+    }
+
     let product = await Produk.findOneAndDelete({ _id: req.params.id });
     let currentImage = `${config.rootPath}/public/upload/${product.image_url}`;
 

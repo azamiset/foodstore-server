@@ -4,11 +4,15 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// (1) Import router
+// (1-A) Import router 
 const productRouter = require('./app/product/router');
 const categoryRouter = require('./app/category/router');
 const tagRouter = require('./app/tag/router');
 const authRouter = require('./app/auth/router');
+const wilayahRouter = require('./app/wilayah/router');
+
+// (1-B) import middleware
+const { decodeToken } = require('./app/auth/middleware');
 
 var app = express();
 
@@ -22,11 +26,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// (2) Gunakan router
+// (2-B) Gunakan Middleware
+app.use(decodeToken());
+
+// (2-A) Gunakan router
 app.use('/api', productRouter);
 app.use('/api', categoryRouter);
 app.use('/api', tagRouter);
+app.use('/api', wilayahRouter);
 app.use('/auth', authRouter);
+
 
 app.use('/', (req, res) => {
   res.render('index');

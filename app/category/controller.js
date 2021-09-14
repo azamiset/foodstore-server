@@ -5,6 +5,15 @@ const Category = require('./model');
 // Membuat Endpoint Create Category
 async function store(req, res, next) {
   try {
+    // cek policy - untuk melindungi API 'Category'
+    let policy = policyFor(req.user);
+    if (!policy.can('create', 'Category')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat Category',
+      });
+    }
+
     // (1) tangkap payload dari client request
     let payload = req.body;
     // (2) buat kategori baru dengan model Category
@@ -33,6 +42,15 @@ async function store(req, res, next) {
 // Membuat Endpoint Update Category
 async function update(req, res, next) {
   try {
+    // cek policy - untuk melindungi API 'Category'
+    let policy = policyFor(req.user);
+    if (!policy.can('update', 'Category')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat Category',
+      });
+    }
+
     let payload = req.body;
 
     let category = await Category.findByIdAndUpdate({ _id: req.params.id }, payload, { new: true, runValidators: true });
@@ -55,6 +73,15 @@ async function update(req, res, next) {
 // Membuat Endpoint Delete Category
 async function destroy(req, res, next) {
   try {
+    // cek policy - untuk melindungi API 'Category'
+    let policy = policyFor(req.user);
+    if (!policy.can('delete', 'Category')) {
+      return res.json({
+        error: 1,
+        message: 'Anda tidak memiliki akses untuk membuat Category',
+      });
+    }
+
     // (1) cari dan hapus category di MongoDb berdasarkan field _id
     let deleted = await Category.findOneAndDelete({ _id: req.params.id });
     // (2) respon ke client dengan data kategory yang barusan dihapus
