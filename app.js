@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cors = require('cors');
 
 // (1-A) Import router 
 const productRouter = require('./app/product/router');
@@ -10,6 +11,9 @@ const categoryRouter = require('./app/category/router');
 const tagRouter = require('./app/tag/router');
 const authRouter = require('./app/auth/router');
 const wilayahRouter = require('./app/wilayah/router');
+const cartRouter = require('/app/cart/router');
+const orderRouter = require('./app/order/router');
+const invoiceRouter = require('/app/invoice/router');
 
 // (1-B) import middleware
 const { decodeToken } = require('./app/auth/middleware');
@@ -26,7 +30,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// (2-B) Gunakan Middleware
+// Gunakan middleware cors
+app.use(cors());
+
+// (2-B) Gunakan Middleware Token
 app.use(decodeToken());
 
 // (2-A) Gunakan router
@@ -35,6 +42,9 @@ app.use('/api', categoryRouter);
 app.use('/api', tagRouter);
 app.use('/api', wilayahRouter);
 app.use('/auth', authRouter);
+app.use('/api', cartRouter);
+app.use('/api', orderRouter);
+app.use('/api', invoiceRouter);
 
 
 app.use('/', (req, res) => {
