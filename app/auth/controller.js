@@ -87,7 +87,7 @@ function me(req, res, next) {
 }
 
 // Membuat endpoint logout pada auth
-function logout(req, res, next) {
+async function logout(req, res, next) {
   // (1) Dapatkan token dari request
   let token = getToken(req);
   // (2) hapus token dari user

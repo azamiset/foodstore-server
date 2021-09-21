@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const deliveryAddressSchema = Schems({
+const deliveryAddressSchema = Schema({
   nama: {
     type: String,
     required: [true, 'Nama almat harus diisi'],

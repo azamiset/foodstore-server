@@ -4,10 +4,11 @@ const multer = require('multer');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-passport.use(new LocalStrategy({ usernameField: 'email' }, controller.localStrategy));
-
 // (2) import auth/controller.js
 const controller = require('./controller');
+
+passport.use(new LocalStrategy({ usernameField: 'email' }, controller.localStrategy));
+
 
 // (3.1) router untuk endpoint register pada Auth
 router.post('/register', multer().none(), controller.register);
